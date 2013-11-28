@@ -6,6 +6,7 @@ from __future__ import absolute_import  # avoid hiding global modules with local
 from __future__ import print_function  # force use of print("hello")
 from __future__ import unicode_literals  # force unadorned strings "" to be unicode without prepending u""
 import unittest
+import os
 import job_queue
 import job_exceptions
 import config
@@ -14,8 +15,12 @@ import sqlite_utilities
 
 
 def assert_we_are_using_testing_configuration():
-    assert config.db_filename == ":memory:"
-    #assert config.db_filename == "testing_db.sqlite"
+    #assert config.db_filename == ":memory:"
+    assert config.db_filename == "tests/testing_db.sqlite"
+    try:
+        os.remove(config.db_filename)
+    except OSError:
+        pass  # we don't care if the file wasn't already there
 
 
 class Test(unittest.TestCase):
@@ -24,7 +29,7 @@ class Test(unittest.TestCase):
         self.mgr = job_queue.Manager(job_queue.Job)
 
     def tearDown(self):
-        sqlite_utilities.drop_table(self.mgr.job_table)
+        sqlite_utilities.drop_table(self.mgr.job_table, self.mgr.db_conn)
 
     def test_adding_a_first_job(self):
         # make sure table has 0 jobs
@@ -47,7 +52,8 @@ class Test(unittest.TestCase):
         self.assertEqual(nbr_succeeded, 0)
         self.assertEqual(nbr_failed, 0)
 
-        sqlite_utilities.change_job_status(self.mgr.job_table, job_id=job_id, new_status=sqlite_utilities.JOB_STATUS_SUCCEEDED)
+        c = self.mgr.db_conn.cursor()
+        sqlite_utilities.mark_job_in_process(self.mgr.job_table, job_id, sqlite_utilities.JOB_STATUS_SUCCEEDED, self.mgr.db_conn, c)
         nbr_available, nbr_in_process, nbr_succeeded, nbr_failed = self.mgr.count_job_states()
         self.assertEqual(nbr_available, 0)
         self.assertEqual(nbr_in_process, 0)
@@ -91,7 +97,7 @@ class TestCrashingJob(unittest.TestCase):
         self.mgr = job_queue.Manager(fixtures.JobAlwaysCrashes)
 
     def tearDown(self):
-        sqlite_utilities.drop_table(self.mgr.job_table)
+        sqlite_utilities.drop_table(self.mgr.job_table, self.mgr.db_conn)
 
     def test_adding_and_process_job_that_crashes(self):
         # make sure table has 0 jobs
@@ -134,7 +140,7 @@ class TestProcessorWithSerialJobs(unittest.TestCase):
         self.processor = job_queue.ProcessJobsInSeries(self.mgr)
 
     def tearDown(self):
-        sqlite_utilities.drop_table(self.mgr.job_table)
+        sqlite_utilities.drop_table(self.mgr.job_table, self.mgr.db_conn)
 
     def test1(self):
         nbr_available, nbr_in_process, nbr_succeeded, nbr_failed = self.mgr.count_job_states()
@@ -164,10 +170,9 @@ class TestProcessorWithParallelJobs(unittest.TestCase):
         self.manager2 = job_queue.Manager(fixtures.JobWithSleep)
 
     def tearDown(self):
-        sqlite_utilities.drop_table(self.manager1.job_table)
-        pass
+        sqlite_utilities.drop_table(self.manager1.job_table, self.manager1.db_conn)
 
-    def XXtest1(self):
+    def test1(self):
         processor1 = job_queue.ProcessJobsInSeries(self.manager1)
         processor2 = job_queue.ProcessJobsInSeries(self.manager2)
 
@@ -175,28 +180,32 @@ class TestProcessorWithParallelJobs(unittest.TestCase):
         self.assertEqual(nbr_available, 0)
         self.assertEqual(nbr_in_process, 0)
         # add 10 jobs
-        [processor1.manager.add_job((n,)) for n in xrange(10)]
-        # make sure the queue has 1 job via the second manager object
+        NBR_JOBS = 11
+        [processor1.manager.add_job((n,)) for n in xrange(NBR_JOBS)]
+        # make sure the second processor can see the jobs put on by the first
         nbr_available, nbr_in_process, nbr_succeeded, nbr_failed = processor2.manager.count_job_states()
-        self.assertEqual(nbr_available, 10)
+        self.assertEqual(nbr_available, NBR_JOBS)
         self.assertEqual(nbr_in_process, 0)
 
-        #from multiprocessing import Process
         from multiprocessing import dummy
-        p1 = dummy.Process(target=processor1.process, args=())
-        #p2 = Process(target=processor2.process)
+        p1 = dummy.Process(target=processor1.process)
+        p2 = dummy.Process(target=processor2.process)
         p1.start()
-        #p2.start()
+        p2.start()
         p1.join()
-        #p2.join()
-        #processor1.process()
-        #1/0
+        p2.join()
+
+        nbr_available, nbr_in_process, nbr_succeeded, nbr_failed = processor1.manager.count_job_states()
+        self.assertEqual(nbr_available, 0)
+        self.assertEqual(nbr_in_process, 0)
+        self.assertEqual(nbr_failed, 0)
+        self.assertEqual(nbr_succeeded, NBR_JOBS)
 
         nbr_available, nbr_in_process, nbr_succeeded, nbr_failed = processor2.manager.count_job_states()
         self.assertEqual(nbr_available, 0)
         self.assertEqual(nbr_in_process, 0)
         self.assertEqual(nbr_failed, 0)
-        self.assertEqual(nbr_succeeded, 10)
+        self.assertEqual(nbr_succeeded, NBR_JOBS)
 
 if __name__ == "__main__":
     unittest.main()

@@ -24,32 +24,33 @@ class Manager(object):
         self.job_prototype = job_prototype
         self.tbl_prefix = "default"
         self.job_table = "jobs_" + self.tbl_prefix
-        #self.db_conn = config.db_conn
-        sqlite_utilities.make_table(self.job_table)
+        self.db_conn = config.get_db_connection()
+        sqlite_utilities.make_table(self.job_table, self.db_conn)
 
     def count_jobs(self):
-        return sqlite_utilities.count_jobs(self.job_table)
+        return sqlite_utilities.count_jobs(self.job_table, self.db_conn)
 
     def add_job(self, arguments):
-        return sqlite_utilities.add_job(self.job_table, arguments)
+        return sqlite_utilities.add_job(self.job_table, arguments, self.db_conn)
 
     def get_available_job(self):
-        return sqlite_utilities.get_available_job(self.job_table)
+        return sqlite_utilities.get_available_job(self.job_table, self.db_conn)
 
     def count_job_states(self):
-        return sqlite_utilities.count_job_states(self.job_table)
+        return sqlite_utilities.count_job_states(self.job_table, self.db_conn)
 
     def get_completed_job(self, job_status=sqlite_utilities.JOB_STATUS_SUCCEEDED):
-        return sqlite_utilities.get_result(self.job_table, job_status)
+        return sqlite_utilities.get_result(self.job_table, job_status, self.db_conn)
 
     def do_single_job(self):
         job_id, arguments = self.get_available_job()
         try:
+            print("do_single_job running with", arguments)
             job = self.job_prototype(arguments)
             result = job.do()
-            sqlite_utilities.change_job_status(self.job_table, job_id, sqlite_utilities.JOB_STATUS_SUCCEEDED, result=result)
+            sqlite_utilities.change_job_status(self.job_table, job_id, sqlite_utilities.JOB_STATUS_SUCCEEDED, self.db_conn, result=result)
         except Exception as err:
-            sqlite_utilities.change_job_status(self.job_table, job_id, sqlite_utilities.JOB_STATUS_FAILED, result=str(err))
+            sqlite_utilities.change_job_status(self.job_table, job_id, sqlite_utilities.JOB_STATUS_FAILED, self.db_conn, result=str(err))
 
 
 class ProcessJobsInSeries(object):
@@ -59,7 +60,9 @@ class ProcessJobsInSeries(object):
     def process(self, stop_when_all_jobs_completed=True):
         while True:
             try:
-                print("tring to do a job")
+                from thread import get_ident
+                config.logging.info("Doing job on thread:" + str(get_ident()))
+                #print("Doing job on thread:" + str(get_ident()))
                 self.manager.do_single_job()
             except job_exceptions.NoJobsException:
                 if stop_when_all_jobs_completed:
@@ -76,6 +79,6 @@ if __name__ == "__main__":
     print(args)
     #print("{} {}".format(args.positional_arg, args.optional_arg))
 
-    #config.logging.info("This is an example log message")
+    config.logging.info("This is an example log message")
 
-    mgr = Manager()
+    mgr = Manager(Job)
