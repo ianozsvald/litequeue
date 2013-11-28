@@ -52,7 +52,8 @@ class Test(unittest.TestCase):
         self.assertEqual(nbr_succeeded, 0)
         self.assertEqual(nbr_failed, 0)
 
-        sqlite_utilities.change_job_status(self.mgr.job_table, job_id=job_id, new_status=sqlite_utilities.JOB_STATUS_SUCCEEDED, db_conn=self.mgr.db_conn)
+        c = self.mgr.db_conn.cursor()
+        sqlite_utilities.mark_job_in_process(self.mgr.job_table, job_id, sqlite_utilities.JOB_STATUS_SUCCEEDED, self.mgr.db_conn, c)
         nbr_available, nbr_in_process, nbr_succeeded, nbr_failed = self.mgr.count_job_states()
         self.assertEqual(nbr_available, 0)
         self.assertEqual(nbr_in_process, 0)
@@ -179,15 +180,13 @@ class TestProcessorWithParallelJobs(unittest.TestCase):
         self.assertEqual(nbr_available, 0)
         self.assertEqual(nbr_in_process, 0)
         # add 10 jobs
-        NBR_JOBS = 5
+        NBR_JOBS = 11
         [processor1.manager.add_job((n,)) for n in xrange(NBR_JOBS)]
-        # make sure the queue has 1 job via the second manager object
+        # make sure the second processor can see the jobs put on by the first
         nbr_available, nbr_in_process, nbr_succeeded, nbr_failed = processor2.manager.count_job_states()
         self.assertEqual(nbr_available, NBR_JOBS)
         self.assertEqual(nbr_in_process, 0)
 
-        #from multiprocessing import Process
-        print("-----------------------")
         from multiprocessing import dummy
         p1 = dummy.Process(target=processor1.process)
         p2 = dummy.Process(target=processor2.process)

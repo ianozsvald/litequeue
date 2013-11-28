@@ -65,37 +65,34 @@ def get_result(service, job_status, db_conn):
     return res[b'id'], result
 
 
-def change_job_status(service, job_id, new_status, db_conn, result=None, c=None):
-    if not c:
-        c = db_conn.cursor()
-        c.execute("BEGIN EXCLUSIVE")
-    if result:
-        pickled_result = cPickle.dumps(result)
-        sql = "UPDATE {} SET status=?, result=? WHERE id=?".format(service)
-        c.execute(sql, (new_status, pickled_result, job_id))
-    else:
-        sql = "UPDATE {} SET status=? WHERE id=?".format(service)
-        c.execute(sql, (new_status, job_id))
+def change_job_status(service, job_id, new_status, db_conn, result):
+    c = db_conn.cursor()
+    pickled_result = cPickle.dumps(result)
+    sql = "UPDATE {} SET status=?, result=? WHERE id=?".format(service)
+    c.execute(sql, (new_status, pickled_result, job_id))
+    db_conn.commit()
+
+
+def mark_job_in_process(service, job_id, job_status, db_conn, c):
+    sql = "UPDATE {} SET status=? WHERE id=?".format(service)
+    c.execute(sql, (job_status, job_id))
     db_conn.commit()
 
 
 def get_available_job(service, db_conn):
     c = db_conn.cursor()
-    c.execute("BEGIN EXCLUSIVE")
+    # block the db from letting someone else see the same available job
+    c.execute("BEGIN IMMEDIATE")
     sql = "SELECT * FROM {} WHERE status=?".format(service)
     c.execute(sql, (JOB_STATUS_AVAILABLE,))
     res = c.fetchone()
     if res is None:
+        db_conn.commit()
         raise job_exceptions.NoJobsException()
     unpickled_arguments = cPickle.loads(str(res[b'arguments']))
 
-
-    import time
-    time.sleep(0.1)
-
     job_id = res[b'id']
-    print("get_available_job found available:", job_id)
-    change_job_status(service, job_id, JOB_STATUS_IN_PROCESS, db_conn, c=c)
+    mark_job_in_process(service, job_id, JOB_STATUS_IN_PROCESS, db_conn, c)
     return job_id, unpickled_arguments
 
 

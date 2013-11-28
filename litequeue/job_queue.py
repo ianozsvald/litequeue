@@ -24,7 +24,6 @@ class Manager(object):
         self.job_prototype = job_prototype
         self.tbl_prefix = "default"
         self.job_table = "jobs_" + self.tbl_prefix
-        #self.db_conn = config.db_conn
         self.db_conn = config.get_db_connection()
         sqlite_utilities.make_table(self.job_table, self.db_conn)
 
@@ -62,7 +61,8 @@ class ProcessJobsInSeries(object):
         while True:
             try:
                 from thread import get_ident
-                print("tring to do a job on", get_ident())
+                config.logging.info("Doing job on thread:" + str(get_ident()))
+                #print("Doing job on thread:" + str(get_ident()))
                 self.manager.do_single_job()
             except job_exceptions.NoJobsException:
                 if stop_when_all_jobs_completed:
@@ -79,6 +79,6 @@ if __name__ == "__main__":
     print(args)
     #print("{} {}".format(args.positional_arg, args.optional_arg))
 
-    #config.logging.info("This is an example log message")
+    config.logging.info("This is an example log message")
 
-    mgr = Manager()
+    mgr = Manager(Job)

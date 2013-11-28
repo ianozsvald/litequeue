@@ -6,6 +6,7 @@ from __future__ import absolute_import  # avoid hiding global modules with local
 from __future__ import print_function  # force use of print("hello")
 from __future__ import unicode_literals  # force unadorned strings "" to be unicode without prepending u""
 import time
+import random
 import job_queue
 
 
@@ -16,8 +17,10 @@ class JobAlwaysCrashes(job_queue.Job):
 
 class JobWithSleep(job_queue.Job):
     def do(self):
-        print("JobWithSleep", self.arguments)
-        time.sleep(0.1)
+        from thread import get_ident
+        print("JobWithSleep with args:", self.arguments, "on thread:", str(get_ident()))
+        time.sleep(random.randrange(1, 5) / 10.0)
+        print("JobWithSleep", self.arguments, "DONE")
 
 
 job1_arguments = (42,)

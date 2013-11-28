@@ -23,7 +23,7 @@ config_choice = os.getenv(CONFIG_ENV_VAR)
 # we could use testing by default, if we choose to
 if config_choice is None:
     print("Defaulting in {} to environment: {} as env var {} was not specified.".format(__file__, CONFIG_ENV_VAR_TESTING, CONFIG_ENV_VAR))
-    #config_choice = CONFIG_ENV_VAR_TESTING
+    config_choice = CONFIG_ENV_VAR_PRODUCTION
 
 if config_choice == CONFIG_ENV_VAR_PRODUCTION:
     from .production import *
@@ -48,6 +48,6 @@ def get_db_connection():
     # we don't worry about the thread checking as our processor objects
     # only run from one thread each, they don't get used by different threads
     # after creation
-    db_conn = sqlite3.connect(db_filename, check_same_thread=False, isolation_level="EXCLUSIVE")
+    db_conn = sqlite3.connect(db_filename, check_same_thread=False)
     db_conn.row_factory = sqlite3.Row
     return db_conn
