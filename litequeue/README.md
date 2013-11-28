@@ -1,0 +1,3 @@
+
+
+    $ CONFIG=testing nosetests
