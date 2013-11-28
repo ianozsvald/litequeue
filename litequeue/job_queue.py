@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""1 liner to explain this project"""
+"""Lightweight queue using SQLite3"""
 from __future__ import division  # 1/2 == 0.5, as in Py3
 from __future__ import absolute_import  # avoid hiding global modules with locals
 from __future__ import print_function  # force use of print("hello")
@@ -20,15 +20,15 @@ class Job(object):
 
 
 class Manager(object):
-    def __init__(self, job_prototype):
+    def __init__(self, job_prototype, tbl_prefix="default"):
         self.job_prototype = job_prototype
-        self.tbl_prefix = "default"
+        self.tbl_prefix = tbl_prefix
         self.job_table = "jobs_" + self.tbl_prefix
         self.db_conn = config.get_db_connection()
         sqlite_utilities.make_table(self.job_table, self.db_conn)
 
-    def count_jobs(self):
-        return sqlite_utilities.count_jobs(self.job_table, self.db_conn)
+    #def count_jobs(self):
+        #return sqlite_utilities.count_jobs(self.job_table, self.db_conn)
 
     def add_job(self, arguments):
         return sqlite_utilities.add_job(self.job_table, arguments, self.db_conn)

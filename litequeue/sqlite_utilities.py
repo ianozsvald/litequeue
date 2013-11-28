@@ -6,6 +6,7 @@ from __future__ import absolute_import  # avoid hiding global modules with local
 from __future__ import print_function  # force use of print("hello")
 from __future__ import unicode_literals  # force unadorned strings "" to be unicode without prepending u""
 import cPickle
+from collections import namedtuple
 import job_exceptions
 
 
@@ -23,12 +24,12 @@ def make_table(service, db_conn):
     db_conn.commit()
 
 
-def count_jobs(service, db_conn):
-    sql = "SELECT COUNT(*) FROM {}".format(service)
-    c = db_conn.cursor()
-    c.execute(sql)
-    res = c.fetchone()
-    return res[0]
+#def count_jobs(service, db_conn):
+    #sql = "SELECT COUNT(*) FROM {}".format(service)
+    #c = db_conn.cursor()
+    #c.execute(sql)
+    #res = c.fetchone()
+    #return res[0]
 
 
 def count_job_states_for_status(service, status_nbr, db_conn):
@@ -44,7 +45,9 @@ def count_job_states(service, db_conn):
     nbr_in_process = count_job_states_for_status(service, JOB_STATUS_IN_PROCESS, db_conn)
     nbr_succeeded = count_job_states_for_status(service, JOB_STATUS_SUCCEEDED, db_conn)
     nbr_failed = count_job_states_for_status(service, JOB_STATUS_FAILED, db_conn)
-    return nbr_available, nbr_in_process, nbr_succeeded, nbr_failed
+    JobStateCounts = namedtuple("JobStateCounts", "NbrAvailable NbrInProcess NbrSucceeded NbrFailed")
+    job_state_counts = JobStateCounts(nbr_available, nbr_in_process, nbr_succeeded, nbr_failed)
+    return job_state_counts
 
 
 def add_job(service, arguments, db_conn):
