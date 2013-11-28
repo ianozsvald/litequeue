@@ -44,8 +44,5 @@ logging.basicConfig(filename=LOG_FILE_NAME, level=logging.DEBUG, format='%(ascti
 # note that it might be useful to use the ConcurrentLogHandler or
 # RotatingLogHandler here (either require some more setup)
 
-
-def get_db_conn():
-    db_conn = sqlite3.connect(db_filename)
-    db_conn.row_factory = sqlite3.Row
-    return db_conn
+db_conn = sqlite3.connect(db_filename)
+db_conn.row_factory = sqlite3.Row

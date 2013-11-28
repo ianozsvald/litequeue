@@ -14,8 +14,8 @@ import sqlite_utilities
 
 
 def assert_we_are_using_testing_configuration():
-    #assert config.db_filename == ":memory:"
-    assert config.db_filename == "testing_db.sqlite"
+    assert config.db_filename == ":memory:"
+    #assert config.db_filename == "testing_db.sqlite"
 
 
 class Test(unittest.TestCase):
@@ -167,7 +167,7 @@ class TestProcessorWithParallelJobs(unittest.TestCase):
         sqlite_utilities.drop_table(self.manager1.job_table)
         pass
 
-    def XXXtest1(self):
+    def XXtest1(self):
         processor1 = job_queue.ProcessJobsInSeries(self.manager1)
         processor2 = job_queue.ProcessJobsInSeries(self.manager2)
 

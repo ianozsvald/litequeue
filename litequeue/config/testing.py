@@ -6,6 +6,6 @@ from __future__ import absolute_import  # avoid hiding global modules with local
 from __future__ import print_function  # force use of print("hello")
 from __future__ import unicode_literals  # force unadorned strings "" to be unicode without prepending u""
 
-#db_filename = ":memory:"
-db_filename = "testing_db.sqlite"
+db_filename = ":memory:"
+#db_filename = "testing_db.sqlite"
 

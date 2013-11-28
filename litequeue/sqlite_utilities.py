@@ -21,7 +21,8 @@ JOB_STATUS_FAILED = 3
     #return c
 
 def get_cursor():
-    db_conn = config.get_db_conn()
+    #db_conn = config.get_db_conn()
+    db_conn = config.db_conn
     c = db_conn.cursor()
     return db_conn, c
 
