@@ -61,7 +61,8 @@ class ProcessJobsInSeries(object):
         while True:
             try:
                 from thread import get_ident
-                config.logging.info("Doing job on thread:" + str(get_ident()))
+                import multiprocessing
+                config.logging.info("Doing job on thread:" + str(get_ident()) + " " + str(multiprocessing.current_process()))
                 #print("Doing job on thread:" + str(get_ident()))
                 self.manager.do_single_job()
             except job_exceptions.NoJobsException:

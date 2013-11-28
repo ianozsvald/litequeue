@@ -187,9 +187,10 @@ class TestProcessorWithParallelJobs(unittest.TestCase):
         self.assertEqual(nbr_available, NBR_JOBS)
         self.assertEqual(nbr_in_process, 0)
 
-        from multiprocessing import dummy
-        p1 = dummy.Process(target=processor1.process)
-        p2 = dummy.Process(target=processor2.process)
+        #from multiprocessing.dummy import Process
+        from multiprocessing import Process
+        p1 = Process(target=processor1.process)
+        p2 = Process(target=processor2.process)
         p1.start()
         p2.start()
         p1.join()
