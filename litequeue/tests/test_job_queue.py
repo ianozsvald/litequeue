@@ -62,7 +62,8 @@ class Test(unittest.TestCase):
 
     def test_error_on_0_jobs(self):
         # make sure table has 0 jobs
-        nbr_jobs = self.mgr.count_jobs()
+        count_of_jobs = self.mgr.count_job_states()
+        nbr_jobs = sum(count_of_jobs)
         self.assertEqual(nbr_jobs, 0)
         # try to get a non-existant job, check correct exception is raised
         self.assertRaises(job_exceptions.NoJobsException, self.mgr.get_available_job)
