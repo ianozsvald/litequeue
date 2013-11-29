@@ -7,11 +7,11 @@ from __future__ import print_function  # force use of print("hello")
 from __future__ import unicode_literals  # force unadorned strings "" to be unicode without prepending u""
 import unittest
 import os
-import job_queue
-import job_exceptions
-import config
-import fixtures
-import sqlite_utilities
+from litequeue import job_queue
+from litequeue import job_exceptions
+from litequeue import config
+from litequeue.tests import fixtures
+from litequeue import sqlite_utilities
 
 
 def assert_we_are_using_testing_configuration():

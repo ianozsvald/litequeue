@@ -6,12 +6,13 @@ from __future__ import absolute_import  # avoid hiding global modules with local
 from __future__ import print_function  # force use of print("hello")
 from __future__ import unicode_literals  # force unadorned strings "" to be unicode without prepending u""
 import argparse
-import config
-import sqlite_utilities
-import job_exceptions
+from litequeue import config
+from litequeue import sqlite_utilities
+from litequeue import job_exceptions
 
 
 class Job(object):
+    """No-op job"""
     def __init__(self, arguments):
         self.arguments = arguments
 
@@ -20,6 +21,7 @@ class Job(object):
 
 
 class Manager(object):
+    """Manage how jobs are run"""
     def __init__(self, job_prototype, tbl_prefix="default"):
         self.job_prototype = job_prototype
         self.tbl_prefix = tbl_prefix

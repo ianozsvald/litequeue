@@ -7,7 +7,7 @@ from __future__ import print_function  # force use of print("hello")
 from __future__ import unicode_literals  # force unadorned strings "" to be unicode without prepending u""
 import cPickle
 from collections import namedtuple
-import job_exceptions
+from litequeue import job_exceptions
 
 
 JOB_STATUS_AVAILABLE = 0
