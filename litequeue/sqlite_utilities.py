@@ -24,14 +24,6 @@ def make_table(service, db_conn):
     db_conn.commit()
 
 
-#def count_jobs(service, db_conn):
-    #sql = "SELECT COUNT(*) FROM {}".format(service)
-    #c = db_conn.cursor()
-    #c.execute(sql)
-    #res = c.fetchone()
-    #return res[0]
-
-
 def count_job_states_for_status(service, status_nbr, db_conn):
     sql = "SELECT COUNT(*) FROM {} WHERE status=?".format(service)
     c = db_conn.cursor()
@@ -66,6 +58,20 @@ def get_result(service, job_status, db_conn):
     res = c.fetchone()
     result = cPickle.loads(str(res[b'result']))
     return res[b'id'], result
+
+
+def get_results(service, job_status, db_conn):
+    sql = "SELECT * FROM {} WHERE status=?".format(service)
+    c = db_conn.cursor()
+    c.execute(sql, (job_status,))
+    results = c.fetchall()
+    for result in results:
+        try:
+            result_col = cPickle.loads(str(result[b'result']))
+        except EOFError:
+            result_col = None  # it might never have contained a pickled result
+        yield result[b'id'], result_col
+        #print()
 
 
 def change_job_status(service, job_id, new_status, db_conn, result):

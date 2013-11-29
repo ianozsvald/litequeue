@@ -15,11 +15,19 @@ class JobAlwaysCrashes(job_queue.Job):
         1 / 0
 
 
+unicode_job_result = u"abcdé"
+
+
+class JobWithUnicode(job_queue.Job):
+    def do(self):
+        return unicode_job_result
+
+
 class JobWithSleep(job_queue.Job):
     def do(self):
         from thread import get_ident
         print("JobWithSleep with args:", self.arguments, "on thread:", str(get_ident()))
-        time.sleep(random.randrange(1, 5) / 10.0)
+        time.sleep(random.randrange(1, 3) / 10.0)
         print("JobWithSleep", self.arguments, "DONE")
 
 

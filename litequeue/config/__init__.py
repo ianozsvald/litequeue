@@ -50,4 +50,5 @@ def get_db_connection():
     # after creation
     db_conn = sqlite3.connect(db_filename, check_same_thread=False)
     db_conn.row_factory = sqlite3.Row
+    db_conn.text_factory = str
     return db_conn

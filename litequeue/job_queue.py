@@ -27,9 +27,6 @@ class Manager(object):
         self.db_conn = config.get_db_connection()
         sqlite_utilities.make_table(self.job_table, self.db_conn)
 
-    #def count_jobs(self):
-        #return sqlite_utilities.count_jobs(self.job_table, self.db_conn)
-
     def add_job(self, arguments):
         return sqlite_utilities.add_job(self.job_table, arguments, self.db_conn)
 

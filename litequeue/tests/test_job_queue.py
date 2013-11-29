@@ -124,6 +124,45 @@ class TestCrashingJob(unittest.TestCase):
         self.assertEqual(result, "division by zero")
 
 
+class TestUnicodeJob(unittest.TestCase):
+    def setUp(self):
+        assert_we_are_using_testing_configuration()
+        self.mgr = job_queue.Manager(fixtures.JobWithUnicode)
+
+    def tearDown(self):
+        sqlite_utilities.drop_table(self.mgr.job_table, self.mgr.db_conn)
+
+    def test_adding_and_process_job_that_crashes(self):
+        # make sure table has 0 jobs
+        nbr_available, nbr_in_process, nbr_succeeded, nbr_failed = self.mgr.count_job_states()
+        self.assertEqual(nbr_available, 0)
+        self.assertEqual(nbr_in_process, 0)
+        # add job
+        self.mgr.add_job(fixtures.job1_arguments)
+        # make sure the queue has 1 job
+        nbr_available, nbr_in_process, nbr_succeeded, nbr_failed = self.mgr.count_job_states()
+        self.assertEqual(nbr_available, 1)
+        self.assertEqual(nbr_in_process, 0)
+
+        # confirm that a unicode string is correctly encoded to bytes before
+        # going in to sqlite3
+        result = u"blahé"
+        sqlite_utilities.change_job_status(self.mgr.job_table, 1, sqlite_utilities.JOB_STATUS_SUCCEEDED, self.mgr.db_conn, result=result)
+
+        # now reset the job and check that it is correctly processed
+        sqlite_utilities.change_job_status(self.mgr.job_table, 1, sqlite_utilities.JOB_STATUS_AVAILABLE, self.mgr.db_conn, result=None)
+        self.mgr.do_single_job()
+
+        nbr_available, nbr_in_process, nbr_succeeded, nbr_failed = self.mgr.count_job_states()
+        self.assertEqual(nbr_available, 0)
+        self.assertEqual(nbr_in_process, 0)
+        self.assertEqual(nbr_succeeded, 1)
+        self.assertEqual(nbr_failed, 0)
+
+        job_id, result = self.mgr.get_completed_job(sqlite_utilities.JOB_STATUS_SUCCEEDED)
+        self.assertEqual(result, fixtures.unicode_job_result)
+
+
 class TestJob(unittest.TestCase):
     def setUp(self):
         assert_we_are_using_testing_configuration()
