@@ -21,8 +21,8 @@ To see stdout and let log.log contain some logging, use:
 TODO
 ----
 
+ * what is this for?
+ * what's a minimal example?
  * cleanup the multiprocessing/thread debug output (tests and job_queue)
  * build a multithreaded processor as an option
- * improve setup.py so it actually works!
  * investigate http://flask.pocoo.org/snippets/88/
- * does an exception that contains unicode *not* get stored, as it hasn't been encoded to a plain string?
