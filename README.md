@@ -2,7 +2,7 @@
 Usage
 -----
 
-    $ python admin.py  # show broken jobs, reset their state
+    litequeue $ python -m litequeue.admin  # show broken jobs, reset their state
 
     $ python get_twitter_profiles.py  # get profiles that we'd added
 
