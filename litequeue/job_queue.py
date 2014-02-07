@@ -20,6 +20,25 @@ class Job(object):
         return self.arguments
 
 
+class SimpleJob(Job):
+    """Take a user-provided function to do the work, store args and result
+
+    NOTE that this is a helper, first you must use functools.partial to
+    create a partially bound Job using where work_fn:
+
+    import functools
+    Job = functools.partial(SimpleJob, your_work_fn)
+    ...
+    ...=Manager(Job, <tbl>)  # pass in your Job, not SimpleJob
+    ..."""
+    def __init__(self, work_fn, arguments):
+        self.arguments = arguments
+        self.work_fn = work_fn
+
+    def do(self):
+        return {"result": self.work_fn(self.arguments), "arguments": self.arguments}
+
+
 class Manager(object):
     """Manage how jobs are run"""
     def __init__(self, job_prototype, tbl_prefix="default"):
@@ -38,8 +57,9 @@ class Manager(object):
     def count_job_states(self):
         return sqlite_utilities.count_job_states(self.job_table, self.db_conn)
 
-    def get_completed_job(self, job_status=sqlite_utilities.JOB_STATUS_SUCCEEDED):
-        return sqlite_utilities.get_result(self.job_table, job_status, self.db_conn)
+    def completed_jobs(self, job_status=sqlite_utilities.JOB_STATUS_SUCCEEDED):
+        """Return a generator of completed jobs"""
+        return sqlite_utilities.get_results(self.job_table, job_status, self.db_conn)
 
     def do_single_job(self):
         job_id, arguments = self.get_available_job()

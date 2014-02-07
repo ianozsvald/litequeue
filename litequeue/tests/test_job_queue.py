@@ -7,6 +7,7 @@ from __future__ import print_function  # force use of print("hello")
 from __future__ import unicode_literals  # force unadorned strings "" to be unicode without prepending u""
 import unittest
 import os
+import functools
 from litequeue import job_queue
 from litequeue import job_exceptions
 from litequeue import config
@@ -88,8 +89,8 @@ class Test(unittest.TestCase):
         self.assertEqual(nbr_succeeded, 1)
         self.assertEqual(nbr_failed, 0)
 
-        job_id, result = self.mgr.get_completed_job()
-        self.assertEqual(result, fixtures.job1_arguments)
+        for job_id, result in self.mgr.completed_jobs():
+            self.assertEqual(result, fixtures.job1_arguments)
 
 
 class TestCrashingJob(unittest.TestCase):
@@ -120,8 +121,8 @@ class TestCrashingJob(unittest.TestCase):
         self.assertEqual(nbr_succeeded, 0)
         self.assertEqual(nbr_failed, 1)
 
-        job_id, result = self.mgr.get_completed_job(sqlite_utilities.JOB_STATUS_FAILED)
-        self.assertEqual(result, "division by zero")
+        for job_id, result in self.mgr.completed_jobs(sqlite_utilities.JOB_STATUS_FAILED):
+            self.assertEqual(result, "division by zero")
 
 
 class TestUnicodeJob(unittest.TestCase):
@@ -159,8 +160,8 @@ class TestUnicodeJob(unittest.TestCase):
         self.assertEqual(nbr_succeeded, 1)
         self.assertEqual(nbr_failed, 0)
 
-        job_id, result = self.mgr.get_completed_job(sqlite_utilities.JOB_STATUS_SUCCEEDED)
-        self.assertEqual(result, fixtures.unicode_job_result)
+        for job_id, result in self.mgr.completed_jobs():
+            self.assertEqual(result, fixtures.unicode_job_result)
 
 
 class TestJob(unittest.TestCase):
@@ -171,6 +172,21 @@ class TestJob(unittest.TestCase):
     def test1(self):
         result = self.job.do()
         self.assertEqual(result, fixtures.job1_arguments)
+
+
+def simple_work_fn(args):
+    return "This did some work on " + repr(args)
+
+
+class TestSimpleJob(unittest.TestCase):
+    def setUp(self):
+        assert_we_are_using_testing_configuration()
+        Job = functools.partial(job_queue.SimpleJob, simple_work_fn)
+        self.job = Job(fixtures.simple_work_fn_arguments)
+
+    def test1(self):
+        result = self.job.do()
+        self.assertEqual(result, fixtures.simple_work_fn_result)
 
 
 class TestProcessorWithSerialJobs(unittest.TestCase):

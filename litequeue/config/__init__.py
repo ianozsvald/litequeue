@@ -22,7 +22,7 @@ config_set = False  # only set to True if we have find a valid ENV VAR
 config_choice = os.getenv(CONFIG_ENV_VAR)
 # we could use testing by default, if we choose to
 if config_choice is None:
-    print("Defaulting in {} to environment: {} as env var {} was not specified.".format(__file__, CONFIG_ENV_VAR_PRODUCTION, CONFIG_ENV_VAR))
+    #print("Defaulting in {} to environment: {} as env var {} was not specified.".format(__file__, CONFIG_ENV_VAR_PRODUCTION, CONFIG_ENV_VAR))
     config_choice = CONFIG_ENV_VAR_PRODUCTION
 
 if config_choice == CONFIG_ENV_VAR_PRODUCTION:

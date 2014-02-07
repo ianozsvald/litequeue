@@ -32,3 +32,6 @@ class JobWithSleep(job_queue.Job):
 
 
 job1_arguments = (42,)
+
+simple_work_fn_arguments = (42,)
+simple_work_fn_result = {u'result': u'This did some work on (42,)', u'arguments': (42,)}
