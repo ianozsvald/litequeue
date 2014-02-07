@@ -8,9 +8,8 @@ Batteries-included lightweight queueing module using sqlite3
 Usage
 -----
 
-    litequeue $ python -m litequeue.admin  # show broken jobs, reset their state
+Examples are in `litequeue\examples`, after installation run these to see simple use cases.
 
-    $ python get_twitter_profiles.py  # get profiles that we'd added
 
 Tests
 -----
@@ -20,7 +19,6 @@ Tests
 To see stdout and let log.log contain some logging, use:
 
     $ CONFIG=testing nosetests -s --nologcapture
-
 
 
 
