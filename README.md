@@ -76,10 +76,10 @@ You should also look at
 
 If you want a heavier queue system then take a look at:
 
-    * 0MQ https://github.com/zeromq/pyzmq
-    * Celery http://www.celeryproject.org/
-    * NSQ http://bitly.github.io/nsq/
-    * Gearman http://gearman.org/
+* 0MQ https://github.com/zeromq/pyzmq
+* Celery http://www.celeryproject.org/
+* NSQ http://bitly.github.io/nsq/
+* Gearman http://gearman.org/
 
 TODO
 ----
