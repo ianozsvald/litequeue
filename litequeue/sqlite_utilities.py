@@ -51,15 +51,6 @@ def add_job(service, arguments, db_conn):
     db_conn.commit()
 
 
-def get_result(service, job_status, db_conn):
-    sql = "SELECT * FROM {} WHERE status=?".format(service)
-    c = db_conn.cursor()
-    c.execute(sql, (job_status,))
-    res = c.fetchone()
-    result = cPickle.loads(str(res[b'result']))
-    return res[b'id'], result
-
-
 def get_results(service, job_status, db_conn):
     sql = "SELECT * FROM {} WHERE status=?".format(service)
     c = db_conn.cursor()
