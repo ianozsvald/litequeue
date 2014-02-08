@@ -11,10 +11,19 @@ This is not meant to replace heavier-weight queues, this is for ad-hoc usage (I 
 Usage
 -----
 
-Examples are in `litequeue\examples`, after installation run these to see simple use cases.
+* Create a worker function that takes 1 argument (it will receive a dictionary of your input arguments)
+* Create a `job_queue.Manager` that knows about this function (see the example below)
+* Create a `job_queue.ProcessJobsInSeries` that knows about the manager
+* Add jobs to the processor
+* Ask the processor to start processing
+* Retrieve the completed jobs once finished
+
+Exceptions raised in your worker function are pickled into the database and the job's flag is set to `sqlite_utilities.JOB_STATUS_FAILED` rather than `sqlite_utilities.JOB_STATUS_SUCCEEDED`. You can reset this flag (TODO).
 
 Example
 -------
+
+Examples live in `litequeue\examples`.
 
 OpenCorporates.org provide an API to company registration databases. Using a RESTful call to `http://api.opencorporates.com/companies/gb/<id_nbr>` we can retrieve the records for UK registered companies. The bulk of the code is:
 
