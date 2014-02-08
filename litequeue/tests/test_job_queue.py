@@ -7,7 +7,6 @@ from __future__ import print_function  # force use of print("hello")
 from __future__ import unicode_literals  # force unadorned strings "" to be unicode without prepending u""
 import unittest
 import os
-import functools
 from litequeue import job_queue
 from litequeue import job_exceptions
 from litequeue import config
@@ -181,7 +180,7 @@ def simple_work_fn(args):
 class TestSimpleJob(unittest.TestCase):
     def setUp(self):
         assert_we_are_using_testing_configuration()
-        Job = functools.partial(job_queue.SimpleJob, simple_work_fn)
+        Job = job_queue.make_simple_job(simple_work_fn)
         self.job = Job(fixtures.simple_work_fn_arguments)
 
     def test1(self):

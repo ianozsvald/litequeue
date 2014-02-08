@@ -6,6 +6,7 @@ from __future__ import absolute_import  # avoid hiding global modules with local
 from __future__ import print_function  # force use of print("hello")
 from __future__ import unicode_literals  # force unadorned strings "" to be unicode without prepending u""
 import argparse
+from functools import partial
 from litequeue import config
 from litequeue import sqlite_utilities
 from litequeue import job_exceptions
@@ -37,6 +38,11 @@ class SimpleJob(Job):
 
     def do(self):
         return {"result": self.work_fn(self.arguments), "arguments": self.arguments}
+
+
+def make_simple_job(work_fn):
+    """Create a partial SimpleJob (convenience method)"""
+    return partial(SimpleJob, work_fn)
 
 
 class Manager(object):
