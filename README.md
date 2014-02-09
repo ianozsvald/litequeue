@@ -98,4 +98,4 @@ TODO
  * cleanup the multiprocessing/thread debug output (tests and job_queue)
  * build a multithreaded processor as an option (using multiprocessing.dummy)
  * investigate http://flask.pocoo.org/snippets/88/
- * let user reset incomplete jobs back to ready status (e.g. for i/o failures)
+ * let user reset incomplete jobs back to ready status (e.g. for i/o failures) - add unit test for this
