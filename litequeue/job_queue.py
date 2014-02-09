@@ -88,11 +88,31 @@ class ProcessJobsInSeries(object):
                 from thread import get_ident
                 import multiprocessing
                 config.logging.info("Doing job on thread:" + str(get_ident()) + " " + str(multiprocessing.current_process()))
-                #print("Doing job on thread:" + str(get_ident()))
                 self.manager.do_single_job()
             except job_exceptions.NoJobsException:
                 if stop_when_all_jobs_completed:
                     break
+
+
+class ProcessJobsInParallel(object):
+    def __init__(self, manager, nbr_processes=2):
+        self.manager = manager
+        from multiprocessing import Process
+        # note we can't use threading here as the sqlite interface isn't
+        # thread-safe, we'd need multiple manager objects for this (TODO later)
+        #from multiprocessing.dummy import Process
+        self.job_processors = []
+        self.processes = []
+        for processor_nbr in range(nbr_processes):
+            processor = ProcessJobsInSeries(manager)
+            self.job_processors.append(processor)
+            self.processes.append(Process(target=processor.process))
+
+    def process(self, stop_when_all_jobs_completed=True):
+        for p in self.processes:
+            p.start()
+        for p in self.processes:
+            p.join()
 
 
 if __name__ == "__main__":

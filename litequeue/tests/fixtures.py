@@ -27,8 +27,18 @@ class JobWithSleep(job_queue.Job):
     def do(self):
         from thread import get_ident
         print("JobWithSleep with args:", self.arguments, "on thread:", str(get_ident()))
-        time.sleep(random.randrange(1, 3) / 10.0)
+        #time.sleep(random.randrange(1, 3) / 10.0)
+        time.sleep(2)
         print("JobWithSleep", self.arguments, "DONE")
+
+
+class JobWith2SecondSleep(job_queue.Job):
+    def do(self):
+        from thread import get_ident
+        print("JobWith2SecondSleep with args:", self.arguments, "on thread:", str(get_ident()))
+        #time.sleep(2 + random.randrange(1, 30) / 100.0)
+        time.sleep(2)
+        print("JobWith2SecondSleep", self.arguments, "DONE")
 
 
 job1_arguments = (42,)

@@ -57,6 +57,17 @@ Results:  # iterate over manager.completed_jobs()
 (2, {u'result': {u'results': {u'company': {u'dissolution_date': None, u'branch_status': None, u'corporate_groupings': [], u'retrieved_at': None, u'updated_at': u'2014-02-06T10:11:28+00:00', u'industry_codes': [], u'inactive': False, u'registered_address_in_full': u'FLAT 122, 100 WESTMINSTER BRIDGE ROAD, LONDON, UNITED KINGDOM, SE1 7XB', u'incorporation_date': u'2014-02-06', u'jurisdiction_code': u'gb', u'opencorporates_url': u'https://opencorporates.com/companies/gb/08879301', u'officers': [], u'previous_names': None, u'source': {u'url': u'http://xmlgw.companieshouse.gov.uk/', u'publisher': u'UK Companies House', u'terms': u'UK Crown Copyright', u'retrieved_at': None}, u'filings': [], u'company_type': u'Private Limited Company', u'data': None, u'name': u'FUDA LIMITED', u'created_at': u'2014-02-06T10:11:28+00:00', u'company_number': u'08879301', u'current_status': u'Active', u'registry_url': u'http://data.companieshouse.gov.uk/doc/company/08879301'}}, u'api_version': u'0.2'}, u'arguments': {u'id': '08879301'}})
 ```
 
+We can make a parallel processing version (using processes):
+
+```
+processor = job_queue.ProcessJobsInParallel(manager, nbr_processes=5)
+```
+
+which we call with:
+
+```
+python call_opencorporates_parallel.py --fetch 08879300 08879301 08879302 08879303 08879304
+```
 
 Tests
 -----
@@ -87,3 +98,4 @@ TODO
  * cleanup the multiprocessing/thread debug output (tests and job_queue)
  * build a multithreaded processor as an option
  * investigate http://flask.pocoo.org/snippets/88/
+ * let user reset incomplete jobs back to ready status (e.g. for i/o failures)

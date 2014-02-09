@@ -263,5 +263,32 @@ class TestProcessorWithParallelJobs(unittest.TestCase):
         self.assertEqual(nbr_failed, 0)
         self.assertEqual(nbr_succeeded, NBR_JOBS)
 
+
+class TestProcessorWithParallelJobs2(unittest.TestCase):
+    def setUp(self):
+        assert_we_are_using_testing_configuration()
+        self.manager1 = job_queue.Manager(fixtures.JobWith2SecondSleep)
+        self.parallel_processor = job_queue.ProcessJobsInParallel(self.manager1, nbr_processes=10)
+
+    def tearDown(self):
+        sqlite_utilities.drop_table(self.manager1.job_table, self.manager1.db_conn)
+
+    def test1(self):
+        nbr_available, nbr_in_process, nbr_succeeded, nbr_failed = self.parallel_processor.manager.count_job_states()
+        self.assertEqual(nbr_available, 0)
+        self.assertEqual(nbr_in_process, 0)
+        # add 10 jobs
+        NBR_JOBS = 10
+        [self.parallel_processor.manager.add_job((n,)) for n in xrange(NBR_JOBS)]
+
+        self.parallel_processor.process()
+
+        nbr_available, nbr_in_process, nbr_succeeded, nbr_failed = self.parallel_processor.manager.count_job_states()
+        self.assertEqual(nbr_available, 0)
+        self.assertEqual(nbr_in_process, 0)
+        self.assertEqual(nbr_failed, 0)
+        self.assertEqual(nbr_succeeded, NBR_JOBS)
+
+
 if __name__ == "__main__":
     unittest.main()
