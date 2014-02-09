@@ -44,8 +44,8 @@ if __name__ == "__main__":
     print(args)
 
     if args.fetch:
-        for follower_id in args.fetch:
-            manager.add_job({'id': str(follower_id)})
+        for company_id in args.fetch:
+            manager.add_job({'id': company_id})
 
         print("Before processing:")
         print(manager.count_job_states())

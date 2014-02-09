@@ -121,7 +121,7 @@ class TestCrashingJob(unittest.TestCase):
         self.assertEqual(nbr_failed, 1)
 
         for job_id, result in self.mgr.completed_jobs(sqlite_utilities.JOB_STATUS_FAILED):
-            self.assertEqual(result, "division by zero")
+            self.assertEqual(result, fixtures.job_always_crashes_result)
 
 
 class TestUnicodeJob(unittest.TestCase):
@@ -221,6 +221,9 @@ class TestProcessorWithSerialJobs(unittest.TestCase):
 class TestProcessorWithParallelJobs(unittest.TestCase):
     def setUp(self):
         assert_we_are_using_testing_configuration()
+        # TODO note that we need 2 managers if we use threads
+        # (multiprocessing.dummy) below, due to the requirement not to use
+        # threads with sqlite3 - this needs fixing
         self.manager1 = job_queue.Manager(fixtures.JobWithSleep)
         self.manager2 = job_queue.Manager(fixtures.JobWithSleep)
 
@@ -234,7 +237,6 @@ class TestProcessorWithParallelJobs(unittest.TestCase):
         nbr_available, nbr_in_process, nbr_succeeded, nbr_failed = processor1.manager.count_job_states()
         self.assertEqual(nbr_available, 0)
         self.assertEqual(nbr_in_process, 0)
-        # add 10 jobs
         NBR_JOBS = 11
         [processor1.manager.add_job((n,)) for n in xrange(NBR_JOBS)]
         # make sure the second processor can see the jobs put on by the first
@@ -267,8 +269,9 @@ class TestProcessorWithParallelJobs(unittest.TestCase):
 class TestProcessorWithParallelJobs2(unittest.TestCase):
     def setUp(self):
         assert_we_are_using_testing_configuration()
-        self.manager1 = job_queue.Manager(fixtures.JobWith2SecondSleep)
-        self.parallel_processor = job_queue.ProcessJobsInParallel(self.manager1, nbr_processes=10)
+        self.manager1 = job_queue.Manager(fixtures.JobWith1SecondSleep)
+        self.nbr_processes = 10
+        self.parallel_processor = job_queue.ProcessJobsInParallel(self.manager1, nbr_processes=self.nbr_processes)
 
     def tearDown(self):
         sqlite_utilities.drop_table(self.manager1.job_table, self.manager1.db_conn)
@@ -278,7 +281,7 @@ class TestProcessorWithParallelJobs2(unittest.TestCase):
         self.assertEqual(nbr_available, 0)
         self.assertEqual(nbr_in_process, 0)
         # add 10 jobs
-        NBR_JOBS = 10
+        NBR_JOBS = 30
         [self.parallel_processor.manager.add_job((n,)) for n in xrange(NBR_JOBS)]
 
         self.parallel_processor.process()
@@ -288,6 +291,13 @@ class TestProcessorWithParallelJobs2(unittest.TestCase):
         self.assertEqual(nbr_in_process, 0)
         self.assertEqual(nbr_failed, 0)
         self.assertEqual(nbr_succeeded, NBR_JOBS)
+
+        pids = set()
+        for result in self.manager1.completed_jobs():
+            print(result)
+            pid = result[1]['worker pid']
+            pids.add(pid)
+        self.assertEqual(len(pids), self.nbr_processes)
 
 
 if __name__ == "__main__":

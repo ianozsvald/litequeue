@@ -75,7 +75,9 @@ class Manager(object):
             result = job.do()
             sqlite_utilities.change_job_status(self.job_table, job_id, sqlite_utilities.JOB_STATUS_SUCCEEDED, self.db_conn, result=result)
         except Exception as err:
-            sqlite_utilities.change_job_status(self.job_table, job_id, sqlite_utilities.JOB_STATUS_FAILED, self.db_conn, result=str(err))
+            result = {"result": str(err), "arguments": arguments}
+            sqlite_utilities.change_job_status(self.job_table, job_id, sqlite_utilities.JOB_STATUS_FAILED, self.db_conn, result=result)
+            #sqlite_utilities.change_job_status(self.job_table, job_id, sqlite_utilities.JOB_STATUS_FAILED, self.db_conn, result=str(err))
 
 
 class ProcessJobsInSeries(object):
